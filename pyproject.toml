@@ -1,0 +1,132 @@
+[tool.black]
+line-length = 120
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+/(
+  \.toml
+  |\.sh
+  |\.git
+  |\.ini
+  |\.tox
+  |Dockerfile
+  |Jenkinfile
+  | _build
+  | dist
+)/
+'''
+
+# ==== isort ====
+[tool.isort]
+profile = "black"
+line_length = 120
+known_first_party = [
+    "config",
+    "apps",
+]
+skip = []
+skip_glob = []
+
+# ==== pytest ====
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--ds=config.settings --reuse-db"
+python_files = [
+    "tests.py",
+    "test_*.py",
+]
+
+# ==== mypy ====
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+
+[tool.ruff]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = ["E", "F"]
+ignore = []
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+line-length = 120
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+target-version = "py310"
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.bandit]
+exclude_dirs = [".tox"]
+# tests = ["B201", "B301"]
+skips = ["B113"]
+
+[tool.poetry]
+name = "tablecv"
+version = "0.1.0"
+description = "Table extraction from image."
+authors = ["Vishal Kumar Mishra <vishal.k.mishra2@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+paddlepaddle = "2.4.2"
+opencv-contrib-python = "4.5.4.60"
+opencv-python = "4.5.4.60"
+opencv-python-headless = "4.5.4.60"
+pytesseract = "^0.3.10"
+pandas = "^2.1.0"
+shapely = "^2.0.1"
+django-environ = "^0.11.2"
+python-dotenv = "^1.0.0"
+pyyaml = "^6.0.1"
+paddleocr = "2.7.0.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.4.0"
+black = "^23.9.1"
+ruff = "^0.0.289"
+sourcery = "^1.9.0"
+mypy = "^1.5.1"
+bandit = "^1.7.5"
+tox = "^4.11.3"
+pytest = "^7.4.2"
+poetry = "^1.6.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

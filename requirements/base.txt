@@ -1,0 +1,16 @@
+paddle-bfloat==0.1.7
+paddleocr==2.7.0.2
+paddlepaddle==2.4.2
+
+opencv-contrib-python==4.5.4.60
+opencv-python==4.5.4.60
+opencv-python-headless==4.5.4.60
+
+pytesseract
+pandas
+shapely
+
+django-environ
+python-dotenv
+
+PyYAML
