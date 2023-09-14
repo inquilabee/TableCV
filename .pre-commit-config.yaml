@@ -55,9 +55,9 @@ repos:
     hooks:
       - id: sourcery
         # only check the files which have changed: does not work on first commit
-        # args: [ --diff=git diff HEAD, --no-summary ]
+        args: [ --diff=git diff HEAD, --no-summary ]
         # args: [ --diff=git diff HEAD, --fix, --no-summary ]
-        args: [ --fix, --no-summary ]
+        # args: [ --fix, --no-summary ]
 
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date

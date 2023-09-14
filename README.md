@@ -1,46 +1,48 @@
 # TableCV
 
-Extract table from an image.
+**TableCV** is a Python package designed to extract tables from images. It offers two approaches for extracting tables, allowing you to choose the one that best suits your needs.
 
-# Usage
+## Installation
 
-There are two ways to get table from an image.
+You can easily install **TableCV** using pip:
 
-## Approach 1 (uses PaddleOCR)
+```bash
+pip install tablecv
+```
 
-Call `extract_table` (returns pandas Dataframe object).
+## Usage
+
+### Approach 1 (using PaddleOCR)
+
+**TableCV** offers a straightforward method to extract tables using PaddleOCR. This approach returns a pandas DataFrame object:
 
 ```python
 from tablecv import extract_table
 
-print(extract_table(image_path=""))
+# Replace "image_path" with the path to your image
+print(extract_table(image_path="your_image.png"))
 ```
 
-## Approach 2
+### Approach 2 (OCR with Your Preferred Tool)
 
-Perform ocr using your favourite OCR tool (EasyOCR, KerasOCR, PaddleOCR, WhateverOCR ...).
-
-`ocr_results` object should look like the following:
+If you prefer using a different OCR tool like EasyOCR, KerasOCR, or any other OCR solution, you can still use **TableCV**. First, perform OCR on your image using your chosen tool. The OCR results should be structured as a list of tuples, each containing a bounding box and corresponding text:
 
 ```python
-# list of tuple of bounding box and text
-
+# List of tuples: (bounding box as (x, y, w, h), text)
 ocr_results = [
-    (
-        (1, 2, 3, 4), "a"   # (x, y, w, h), text
-    ),
-    (
-        (4, 5, 6, 7), "b"
-    ),
-    ...
+    ((1, 2, 3, 4), "a"),
+    ((4, 5, 6, 7), "b"),
+    # Add more tuples as needed
 ]
 ```
 
-and then call `extract_table_from_ocr` method.
+After obtaining your OCR results, you can extract tables from them using **TableCV**:
 
 ```python
 from tablecv import extract_table_from_ocr
 
-ocr_results: list[tuple[tuple[float, float, float, float], str]] = ...
+# Replace "ocr_results" with your OCR results list
 print(extract_table_from_ocr(ocr_results))
 ```
+
+With these two approaches, **TableCV** provides flexibility for table extraction from images, whether you prefer using PaddleOCR or another OCR tool of your choice.
