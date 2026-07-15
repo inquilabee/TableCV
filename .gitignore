@@ -138,3 +138,4 @@ dmypy.json
 .env
 .cron.env
 todos.md
+notes/

@@ -20,7 +20,12 @@ def _create_paddle_ocr():
         raise ImportError(msg) from exc
 
     try:
-        return PaddleOCR(use_textline_orientation=True)
+        return PaddleOCR(
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=True,
+            enable_mkldnn=False,
+        )
     except TypeError:
         return PaddleOCR(use_angle_cls=True)
 

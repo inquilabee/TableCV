@@ -70,6 +70,8 @@ testpaths = ["tests"]
 pythonpath = ["."]
 python_files = ["test_*.py"]
 addopts = [
+  "-m",
+  "not integration",
   "--strict-config",
   "--strict-markers",
 ]

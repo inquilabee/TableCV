@@ -5,7 +5,7 @@ test:
 	uv run pytest -q
 
 integration:
-	uv run pytest -m integration -q
+	PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True uv run --extra paddle pytest -m integration -q
 
 coverage:
 	uv run pytest --cov=tablecv --cov-report=term-missing
