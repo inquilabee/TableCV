@@ -31,10 +31,22 @@ def _create_paddle_ocr():
 
 
 def _standardize_box(coords: Any) -> tuple[float, float, float, float]:
-    if len(coords) == 4 and all(isinstance(value, Number) for value in coords):
-        x_min, y_min, x_max, y_max = (float(value) for value in coords)
-        return x_min, y_min, x_max - x_min, y_max - y_min
+    if _is_corner_box(coords):
+        return _standardize_corner_box(coords)
 
+    return _standardize_polygon_box(coords)
+
+
+def _is_corner_box(coords: Any) -> bool:
+    return len(coords) == 4 and all(isinstance(value, Number) for value in coords)
+
+
+def _standardize_corner_box(coords: Any) -> tuple[float, float, float, float]:
+    x_min, y_min, x_max, y_max = (float(value) for value in coords)
+    return x_min, y_min, x_max - x_min, y_max - y_min
+
+
+def _standardize_polygon_box(coords: Any) -> tuple[float, float, float, float]:
     points = list(coords)
     x_values = [float(point[0]) for point in points]
     y_values = [float(point[1]) for point in points]

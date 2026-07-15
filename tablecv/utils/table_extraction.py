@@ -16,27 +16,49 @@ class TableRows:
     column_count: int
 
     def to_dataframe(self) -> pd.DataFrame:
-        ocr_text_by_box = defaultdict(deque)
+        ocr_text_by_box = self._ocr_text_by_box()
+        row_box_counts = self._row_box_counts()
+        text_data = self._empty_text_data()
+        self._fill_text_data(text_data, ocr_text_by_box, row_box_counts)
+
+        data = [[" ".join(cell_texts) for cell_texts in row] for row in text_data]
+        return pd.DataFrame(data)
+
+    def _ocr_text_by_box(self) -> defaultdict[BoundingBoxTuple, deque[str]]:
+        text_by_box = defaultdict(deque)
         for text_box in self.text_boxes:
-            ocr_text_by_box[text_box.bounds].append(text_box.text)
+            text_by_box[text_box.bounds].append(text_box.text)
 
-        row_box_counts = Counter(cell_box for row in self.rows for _, cell_box in row)
-        text_data = [[[] for _ in range(self.column_count)] for _ in range(self.row_count)]
+        return text_by_box
 
+    def _row_box_counts(self) -> Counter[BoundingBoxTuple]:
+        return Counter(cell_box for row in self.rows for _, cell_box in row)
+
+    def _empty_text_data(self) -> list[list[list[str]]]:
+        return [[[] for _ in range(self.column_count)] for _ in range(self.row_count)]
+
+    def _fill_text_data(
+        self,
+        text_data: list[list[list[str]]],
+        ocr_text_by_box: defaultdict[BoundingBoxTuple, deque[str]],
+        row_box_counts: Counter[BoundingBoxTuple],
+    ) -> None:
         for row_index, row in enumerate(self.rows):
             for cell_number, cell_box in row:
                 if cell_number >= self.column_count:
                     continue
 
-                texts = ocr_text_by_box[cell_box]
-                if row_box_counts[cell_box] == 1:
-                    text_data[row_index][cell_number].extend(texts)
-                    texts.clear()
-                elif texts:
-                    text_data[row_index][cell_number].append(texts.popleft())
+                self._append_cell_text(
+                    text_data[row_index][cell_number], ocr_text_by_box[cell_box], row_box_counts[cell_box]
+                )
 
-        data = [[" ".join(cell_texts) for cell_texts in row] for row in text_data]
-        return pd.DataFrame(data)
+    @staticmethod
+    def _append_cell_text(cell_texts: list[str], texts: deque[str], box_count: int) -> None:
+        if box_count == 1:
+            cell_texts.extend(texts)
+            texts.clear()
+        elif texts:
+            cell_texts.append(texts.popleft())
 
 
 @dataclass(frozen=True, slots=True)

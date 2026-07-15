@@ -64,6 +64,18 @@ repos:
         entry: uv run codespell
         language: system
         pass_filenames: false
+      - id: radon-mi
+        name: radon mi
+        entry: bash -c 'output="$(uv run radon mi -s -n B tablecv)"; if [ -n "$output" ]; then printf "%s\n" "$output"; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: radon-cc
+        name: radon cc
+        entry: bash -c 'output="$(uv run radon cc -s -n B tablecv)"; if [ -n "$output" ]; then printf "%s\n" "$output"; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: ty
         name: ty
         entry: uv run --with ty ty check
