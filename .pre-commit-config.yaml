@@ -64,6 +64,12 @@ repos:
         entry: uv run codespell
         language: system
         pass_filenames: false
+      - id: ty
+        name: ty
+        entry: uv run --with ty ty check
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: pytest
         name: pytest
         entry: uv run pytest -q

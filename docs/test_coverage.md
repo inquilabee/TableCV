@@ -19,9 +19,14 @@ make integration
 - `extract_table_from_ocr()` builds a `DataFrame` from synthetic OCR boxes.
 - `extract_table()` accepts real PNG and JPG image paths when an OCR engine is injected.
 - Downloaded Magnific JPG fixtures are present and validated as real JPEG files.
+- Downloaded Kirana invoice fixtures are present, attributed, and validated as real PNG files.
 - Empty OCR results return an empty `DataFrame`.
 - Duplicate text boxes preserve text order within a cell.
 - Zero-width boxes do not crash overlap calculation.
+- Full-document OCR with invoice-style headers and footers extracts the table region instead of collapsing into one column.
+- Table headers can define the column grid when body rows have missing cells.
+- Single-box noise inside a table band does not split one table into multiple outputs.
+- Multi-cell metadata before a table header is excluded from the extracted table.
 
 ## Integration Coverage
 
@@ -40,6 +45,6 @@ sudo apt-get install -y libgomp1
 
 ## Next Priorities
 
-1. Add unit tests for uneven rows and missing cells.
-1. Add tests for noisy OCR boxes that should be filtered from the table.
+1. Add deterministic coverage for documents with more than one real table.
+1. Add targeted tests for skewed or rotated synthetic boxes if the core layout starts supporting them.
 1. Increase coverage threshold after the above tests land.

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tablecv"
-version = "0.2.0"
+version = "0.2.1"
 description = "Extract table-shaped data from OCR text boxes."
 readme = "README.md"
 requires-python = ">=3.13,<4.0"
@@ -114,7 +114,7 @@ skips = [
 ]
 
 [tool.codespell]
-skip = "*.lock,uv.lock,.venv,build,dist"
+skip = "*.lock,uv.lock,.venv,build,dist,notes"
 
 [tool.coverage.run]
 branch = true

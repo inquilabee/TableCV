@@ -15,7 +15,7 @@ class BoundingBox:
 
     @classmethod
     def from_tuple(cls, bounds: "BoundingBox | BoundingBoxTuple") -> "BoundingBox":
-        if isinstance(bounds, cls):
+        if isinstance(bounds, BoundingBox):
             return bounds
 
         x, y, width, height = bounds

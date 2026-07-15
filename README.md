@@ -82,20 +82,22 @@ print(df)
 
 ## How It Works
 
-TableCV estimates a table in three broad steps:
+TableCV estimates a table in four broad steps:
 
-1. It finds the overall table area from all OCR boxes.
-1. It groups boxes that share similar vertical positions into rows.
-1. It uses the most common row width as the reference for column positions.
+1. It groups OCR boxes that share similar vertical positions into rows.
+1. It finds the strongest table-like region, ignoring surrounding document text such as invoice headers, addresses, and footers.
+1. It chooses a reference row from repeated column patterns or the table header.
+1. It maps each OCR box in the table region to the closest column.
 
-This works best for documents where text boxes line up in clear rows and columns.
+This works best for documents where the table text boxes line up in repeated rows and columns. For example, it can extract a line-item table from an invoice page that also contains logos, billing details, totals, and footer text.
 
 ## Limitations
 
 TableCV is a lightweight table estimator, not a full document understanding system.
 
 - It does not detect table borders or merged cells.
-- It expects OCR boxes to be close to reading order.
+- It returns the strongest table-like region, not every table on a page.
+- It expects OCR boxes to be close to reading order and reasonably aligned.
 - Skewed, rotated, handwritten, or heavily nested tables may need preprocessing.
 - Real OCR accuracy depends on the OCR engine, image quality, language, and font.
 

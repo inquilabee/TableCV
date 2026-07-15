@@ -1,6 +1,7 @@
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from statistics import median
 
 from tablecv.types import BoundingBox, BoundingBoxTuple
 
@@ -59,13 +60,18 @@ class TableLayout:
         self.filtered_boxes = self._filter_boxes(self.source_boxes, self.table_bounds)
         non_overlap_boxes = self._non_overlapping_boxes(self.filtered_boxes)
         self.rows = self._estimate_rows(non_overlap_boxes)
-        self.reference_row, self.column_count = self._estimate_reference_row(self.rows)
+        table_rows = self._select_table_rows(self.rows)
+        self.reference_row, self.column_count = self._estimate_table_reference_row(table_rows)
+        table_rows = self._trim_rows_before_reference(table_rows, self.reference_row)
+
+        if table_rows:
+            self.table_bounds = self._table_bounding_box([box.as_tuple for row in table_rows for box in row.boxes])
 
         if not self.reference_row.boxes or self.column_count == 0:
             return
 
         cell_boundaries = self._cell_boundaries_along_x(self.reference_row)
-        self.rows_with_cell_numbers = self._estimate_cell_numbers(self.rows, cell_boundaries)
+        self.rows_with_cell_numbers = self._estimate_cell_numbers(table_rows, cell_boundaries)
 
     @staticmethod
     def _non_overlapping_boxes(boxes: Sequence[BoundingBoxLike]) -> list[BoundingBox]:
@@ -108,6 +114,98 @@ class TableLayout:
         most_common_length = Counter(row_lengths).most_common(1)[0][0]
         reference_rows = [row for row in rows if row.length == most_common_length]
         return reference_rows[0], most_common_length
+
+    def _select_table_rows(self, rows: list[RowCluster]) -> list[RowCluster]:
+        candidate_runs = self._table_row_runs(rows)
+        if not candidate_runs:
+            return rows
+
+        return max(candidate_runs, key=self._score_row_run)
+
+    def _table_row_runs(self, rows: list[RowCluster]) -> list[list[RowCluster]]:
+        multi_cell_rows = [row for row in rows if row.length >= self.min_col]
+        if not multi_cell_rows:
+            return []
+
+        max_row_gap = self._max_table_row_gap(multi_cell_rows)
+        runs = []
+        current_run = [multi_cell_rows[0]]
+
+        for row in multi_cell_rows[1:]:
+            if self._row_y(row) - self._row_y(current_run[-1]) <= max_row_gap:
+                current_run.append(row)
+            else:
+                if len(current_run) >= self.min_row:
+                    runs.append(current_run)
+                current_run = [row]
+
+        if len(current_run) >= self.min_row:
+            runs.append(current_run)
+
+        return runs
+
+    @classmethod
+    def _max_table_row_gap(cls, rows: list[RowCluster]) -> float:
+        y_values = [cls._row_y(row) for row in rows]
+        gaps = [current - previous for previous, current in zip(y_values, y_values[1:], strict=False)]
+        positive_gaps = [gap for gap in gaps if gap > 0]
+        typical_height = median(cls._row_height(row) for row in rows)
+
+        if not positive_gaps:
+            return typical_height * 3
+
+        return max(median(positive_gaps) * 2.5, typical_height * 3)
+
+    @staticmethod
+    def _row_y(row: RowCluster) -> float:
+        return min(box.y for box in row.boxes)
+
+    @staticmethod
+    def _row_height(row: RowCluster) -> float:
+        return max(box.height for box in row.boxes)
+
+    @staticmethod
+    def _score_row_run(rows: list[RowCluster]) -> float:
+        row_lengths = [row.length for row in rows]
+        length_counts = Counter(row_lengths)
+        repeated_length, repeated_count = max(length_counts.items(), key=lambda item: (item[0] * item[1], item[0]))
+        total_cells = sum(row_lengths)
+        return repeated_length * repeated_count + total_cells / 100
+
+    @staticmethod
+    def _trim_rows_before_reference(rows: list[RowCluster], reference_row: RowCluster) -> list[RowCluster]:
+        if not reference_row.boxes:
+            return rows
+
+        try:
+            reference_index = rows.index(reference_row)
+        except ValueError:
+            return rows
+
+        return rows[reference_index:]
+
+    def _estimate_table_reference_row(self, rows: list[RowCluster]) -> tuple[RowCluster, int]:
+        if not rows:
+            return RowCluster([]), 0
+
+        longest_row_length = max(row.length for row in rows)
+        if rows[0].length == longest_row_length:
+            return rows[0], longest_row_length
+
+        row_lengths = Counter(row.length for row in rows)
+        if row_lengths[longest_row_length] >= 2:
+            reference_rows = [row for row in rows if row.length == longest_row_length]
+            return reference_rows[0], longest_row_length
+
+        repeated_lengths = {
+            length: count for length, count in row_lengths.items() if length >= self.min_col and count >= self.min_row
+        }
+        if repeated_lengths:
+            column_count, _ = max(repeated_lengths.items(), key=lambda item: (item[0] * item[1], item[0]))
+            reference_rows = [row for row in rows if row.length == column_count]
+            return reference_rows[0], column_count
+
+        return self._estimate_reference_row(rows)
 
     @staticmethod
     def _cell_boundaries_along_x(reference_row: RowCluster) -> list[tuple[float, float]]:

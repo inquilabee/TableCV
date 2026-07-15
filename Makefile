@@ -32,7 +32,7 @@ build:
 	uv build
 
 publish-check: build
-	uv run python -m zipfile --test dist/*.whl
+	for wheel in dist/*.whl; do uv run python -m zipfile --test "$$wheel"; done
 
 install-hooks:
 	uv run pre-commit install
