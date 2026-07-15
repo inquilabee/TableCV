@@ -1,138 +1,125 @@
-[tool.black]
-line-length = 120
-target-version = ['py310']
-include = '\.pyi?$'
-exclude = '''
-/(
-  \.toml
-  |\.sh
-  |\.git
-  |\.ini
-  |\.tox
-  |Dockerfile
-  |Jenkinfile
-  | _build
-  | dist
-)/
-'''
+[build-system]
+requires = ["setuptools>=80.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
-# ==== isort ====
-[tool.isort]
-profile = "black"
-line_length = 120
-known_first_party = [
-    "config",
-    "apps",
+[project]
+name = "tablecv"
+version = "0.2.0"
+description = "Extract table-shaped data from OCR text boxes."
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "Vishal Kumar Mishra", email = "vishal.k.mishra2@gmail.com" },
 ]
-skip = []
-skip_glob = []
+keywords = [
+  "computer-vision",
+  "ocr",
+  "opencv",
+  "pandas",
+  "python",
+  "table-extraction",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Image Recognition",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  "pandas>=2.2.0",
+  "shapely>=2.0.0",
+]
 
-# ==== pytest ====
+[project.optional-dependencies]
+paddle = [
+  "paddleocr>=3.0.0",
+  "paddlepaddle>=3.3.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/inquilabee/TableCV"
+Repository = "https://github.com/inquilabee/TableCV"
+Issues = "https://github.com/inquilabee/TableCV/issues"
+Changelog = "https://github.com/inquilabee/TableCV/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+dev = [
+  "bandit>=1.9.4",
+  "codespell>=2.4.2",
+  "mdformat>=0.7.22",
+  "mypy>=1.18.0",
+  "pre-commit>=4.6.0",
+  "pytest>=8.4.0",
+  "pytest-cov>=7.0.0",
+  "ruff>=0.11.13,<0.12.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tablecv*"]
+exclude = ["tests*"]
+
 [tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "--ds=config.settings --reuse-db"
-python_files = [
-    "tests.py",
-    "test_*.py",
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+addopts = [
+  "--strict-config",
+  "--strict-markers",
+]
+filterwarnings = [
+  "error",
+]
+markers = [
+  "integration: tests that require OCR engines, model downloads, image fixtures, or external binaries",
 ]
 
-# ==== mypy ====
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 check_untyped_defs = true
 ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
 
-
 [tool.ruff]
-# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
-select = ["E", "F"]
-ignore = []
+line-length = 120
+target-version = "py313"
 
-# Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
-unfixable = []
-
-# Exclude a variety of commonly ignored directories.
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
+[tool.ruff.lint]
+select = ["B", "C4", "C901", "E", "F", "I", "UP"]
+ignore = [
+  "E501", # line length is enforced by formatter where practical
 ]
 
-line-length = 120
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-target-version = "py310"
+[tool.ruff.lint.isort]
+known-first-party = ["tablecv"]
 
-[tool.ruff.mccabe]
-# Unlike Flake8, default to a complexity level of 10.
+[tool.ruff.lint.mccabe]
 max-complexity = 10
 
 [tool.bandit]
-exclude_dirs = [".tox"]
-# tests = ["B201", "B301"]
-skips = ["B113"]
-
-[tool.poetry]
-name = "tablecv"
-version = "0.1.1"
-description = "Table extraction from image."
-authors = ["Vishal Kumar Mishra <vishal.k.mishra2@gmail.com>"]
-license = "MIT"
-readme = "README.md"
-homepage = "https://github.com/inquilabee/TableCV"
-repository = "https://github.com/inquilabee/TableCV"
-keywords = ["opencv", "opencv python", "python table image", "python table extraction"]
-include = [
-    "LICENSE",
+exclude_dirs = [".venv", "build", "dist", "tests"]
+skips = [
+  "B101", # asserts document extraction invariants in tests
+  "B113", # retained for compatibility with tools that may inspect requests-like patterns
 ]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-paddlepaddle = "2.4.2"
-opencv-contrib-python = "4.5.4.60"
-opencv-python = "4.5.4.60"
-opencv-python-headless = "4.5.4.60"
-pytesseract = "^0.3.10"
-pandas = "^2.1.0"
-shapely = "^2.0.1"
-django-environ = "^0.11.2"
-python-dotenv = "^1.0.0"
-pyyaml = "^6.0.1"
-paddleocr = "2.7.0.2"
+[tool.codespell]
+skip = "*.lock,uv.lock,.venv,build,dist"
 
+[tool.coverage.run]
+branch = true
+source = ["tablecv"]
+omit = ["tests/*"]
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^3.4.0"
-black = "^23.9.1"
-ruff = "^0.0.289"
-sourcery = "^1.9.0"
-mypy = "^1.5.1"
-bandit = "^1.7.5"
-tox = "^4.11.3"
-pytest = "^7.4.2"
-poetry = "^1.6.1"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.coverage.report]
+fail_under = 70
+precision = 1
+show_missing = true

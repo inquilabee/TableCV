@@ -1,0 +1,7 @@
+{
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "python.analysis.typeCheckingMode": "basic",
+  "ruff.importStrategy": "fromEnvironment"
+}

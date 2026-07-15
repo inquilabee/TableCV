@@ -1,0 +1,21 @@
+---
+description: Quality gates and testing policy for TableCV
+alwaysApply: true
+---
+
+# Quality Gates
+
+Lint, security, build, and test failures are defects. Fix them on the branch; do not bypass hooks.
+
+Use these gates:
+- `make test`: default deterministic suite.
+- `make integration`: OCR-engine, image-fixture, or external-binary tests.
+- `make check-commit`: fast local gate before commit.
+- `make lint`: full pre-commit run.
+- `make build`: build wheel and sdist with `uv`.
+
+Rules:
+- Never use `git commit --no-verify` or skip pre-commit hooks.
+- Default tests must not depend on PaddleOCR model downloads or private local files.
+- Keep `extract_table_from_ocr()` covered by pure synthetic OCR examples.
+- Before claiming work is complete, run the relevant fresh commands and report actual results.

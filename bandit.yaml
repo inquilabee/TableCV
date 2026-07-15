@@ -1,10 +1,9 @@
-# also see pyproject.toml for [tool.bandit]
-# https://bandit.readthedocs.io/en/1.7.5/config.html
-# exclude = tests,path/to/file
-# tests = B201,B301
-
-exclude_dirs: [ 'tests/', 'repository_directory/', "tox" ]
-tests: [ ]
-skips: [
-    'B113' # request.get without a timeout
-]
+exclude_dirs:
+  - .venv
+  - build
+  - dist
+  - tests
+tests: []
+skips:
+  - B101 # asserts document table invariants in tests
+  - B113 # retained for compatibility with tools that may inspect requests-like patterns

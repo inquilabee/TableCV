@@ -1,0 +1,19 @@
+---
+description: TableCV project map and package boundaries
+alwaysApply: true
+---
+
+# Project Map
+
+`tablecv` is a published Python package that extracts table-shaped data from OCR text boxes. Preserve the package name `tablecv` and the public entry points exported from `tablecv/__init__.py`.
+
+Core modules:
+- `extract_table.py`: optional PaddleOCR integration and user-facing `extract_table()`.
+- `utils/table_extraction.py`: OCR result to `pandas.DataFrame` conversion.
+- `utils/bounding_box.py`: row and column estimation from `(x, y, width, height)` boxes.
+- `types.py`: shared `BoundingBox` and `OCRResult` type aliases.
+
+Design boundaries:
+- Keep OCR engine setup optional and lazy; importing `tablecv` must not download models or require PaddleOCR.
+- Keep default tests deterministic and independent of local image files.
+- Preserve public function names unless a release plan explicitly calls for a breaking change.

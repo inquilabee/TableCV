@@ -1,31 +1,62 @@
-name: Upload Python Package
-
+name: Build and publish Python package
 on:
   push:
     branches:
       - main
-
-permissions:
-  contents: read
-
 jobs:
-  deploy:
-
+  publish:
     runs-on: ubuntu-latest
-
+    concurrency: pypi-publish
+    environment:
+      name: pypi
+      url: https://pypi.org/p/tablecv
+    permissions:
+      contents: read
+      id-token: write
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.10'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements/dev.txt
-    - name: Set PYPI token
-      run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-    - name: Build package
-      run: poetry build
-    - name: Publish package
-      run: poetry publish
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Install Python
+        run: uv python install 3.13
+      - name: Install dependencies
+        run: uv sync --all-groups --python 3.13
+      - name: Check package quality
+        run: make check-commit
+      - name: Build distributions
+        run: make build
+      - name: Read package version
+        id: package
+        run: |
+          version="$(uv run python -c 'import tomllib; from pathlib import Path; print(tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"])')"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+      - name: Check PyPI version status
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          status="$(uv run python - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+
+          version = os.environ["VERSION"]
+          url = f"https://pypi.org/pypi/tablecv/{version}/json"
+          try:
+              with urllib.request.urlopen(url, timeout=15) as response:
+                  json.load(response)
+          except urllib.error.HTTPError as exc:
+              if exc.code == 404:
+                  print("missing")
+                  sys.exit(0)
+              raise
+          print("exists")
+          PY
+          )"
+          if [ "$status" = "exists" ]; then
+            echo "tablecv ${VERSION} already exists on PyPI. Bump the version before pushing to main."
+            exit 1
+          fi
+      - name: Publish to PyPI
+        run: uv publish --trusted-publishing always

@@ -1,0 +1,27 @@
+---
+description: Agent workflow and safety rules for TableCV
+alwaysApply: true
+---
+
+# Agent Workflow
+
+Before substantial work:
+- Read `AGENTS.md`, `.cursor/rules/project.mdc`, and relevant modules.
+- Plan before multi-file changes or public API changes.
+- Search for existing helpers before adding new abstractions.
+
+Git actions:
+- Do not commit, push, open PRs, publish, or merge unless the user explicitly asks in the current task.
+- Never rewrite user work or use destructive git commands without explicit approval.
+- Do not edit release credentials or secrets.
+
+Implementation:
+- Keep changes small and tied to the requested scope.
+- Preserve the published API unless a breaking release is intentional.
+- Prefer deterministic OCR-box tests over real OCR in the default suite.
+- When a failure occurs, find the root cause before applying fixes.
+
+Verification:
+- Run the smallest relevant command after each risky change.
+- Run the full requested gate before closeout.
+- State skipped checks and environment blockers plainly.

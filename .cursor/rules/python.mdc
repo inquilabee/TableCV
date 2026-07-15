@@ -1,0 +1,25 @@
+---
+description: Python standards for TableCV
+alwaysApply: true
+---
+
+# Python
+
+Target Python 3.13+ and use `uv run` for Python commands.
+
+Style:
+- Use Ruff as the formatter and linter. Line length is 120.
+- Imports are stdlib, third-party, then local. No wildcard imports.
+- Prefer built-in generics: `list[str]`, `dict[str, str]`, `str | None`.
+- Add or preserve type hints on public APIs when touching a function.
+
+Table extraction patterns:
+- OCR results are `((x, y, width, height), text)` tuples.
+- Keep `extract_table_from_ocr()` independent of OCR engines.
+- Avoid new module-level mutable state or import-time OCR initialization.
+- Raise explicit errors at optional dependency boundaries.
+
+Testing:
+- Write regression tests for bug fixes before changing production code.
+- Use synthetic OCR boxes in default tests.
+- Mark model-download, image-fixture, or external-binary checks as `integration`.

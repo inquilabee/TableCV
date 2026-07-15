@@ -1,48 +1,136 @@
 # TableCV
 
-**TableCV** is a Python package designed to extract tables from images. It offers two approaches for extracting tables, allowing you to choose the one that best suits your needs.
+TableCV turns OCR text boxes into a `pandas.DataFrame`. Use it when you already have OCR output from an image and want a simple table-like result without writing row and column grouping logic yourself.
+
+OCR means optical character recognition: software reads text from an image. Most OCR tools return each piece of text with a bounding box, which is the rectangle around that text. TableCV uses those rectangles to estimate which text belongs in each row and column.
+
+## Why Use It
+
+- Works with any OCR tool that can return text boxes.
+- Returns a familiar `pandas.DataFrame`.
+- Keeps the core table extraction separate from heavy OCR engines.
+- Supports an optional PaddleOCR path for users who want OCR and table extraction in one call.
 
 ## Installation
 
-You can easily install **TableCV** using pip:
+For table extraction from OCR results:
 
 ```bash
 pip install tablecv
 ```
 
-## Usage
+For the optional PaddleOCR helper:
 
-### Approach 1 (using PaddleOCR)
-
-**TableCV** offers a straightforward method to extract tables using PaddleOCR. This approach returns a pandas DataFrame object:
-
-```python
-from tablecv import extract_table
-
-# Replace "image_path" with the path to your image
-print(extract_table(image_path="your_image.png"))
+```bash
+pip install "tablecv[paddle]"
 ```
 
-### Approach 2 (OCR with Your Preferred Tool)
+On Linux, PaddlePaddle may also need the system OpenMP runtime. For Ubuntu or Debian-based systems, install `libgomp1` if importing Paddle fails with a `libgomp.so.1` error.
 
-If you prefer using a different OCR tool like EasyOCR, KerasOCR, or any other OCR solution, you can still use **TableCV**. First, perform OCR on your image using your chosen tool. The OCR results should be structured as a list of tuples, each containing a bounding box and corresponding text:
+## Requirements
 
-```python
-# List of tuples: (bounding box as (x, y, w, h), text)
-ocr_results = [
-    ((1, 2, 3, 4), "a"),
-    ((4, 5, 6, 7), "b"),
-    # Add more tuples as needed
-]
-```
+- Python 3.13+
+- `pandas` and `shapely` for the core extraction path
+- PaddleOCR only if you call `extract_table()`
 
-After obtaining your OCR results, you can extract tables from them using **TableCV**:
+## Quick Start With Existing OCR Results
+
+Use `extract_table_from_ocr()` when your OCR tool has already read the image.
 
 ```python
 from tablecv import extract_table_from_ocr
 
-# Replace "ocr_results" with your OCR results list
-print(extract_table_from_ocr(ocr_results))
+ocr_results = [
+    ((0, 0, 10, 5), "Name"),
+    ((20, 0, 10, 5), "Qty"),
+    ((0, 20, 10, 5), "Tea"),
+    ((20, 20, 10, 5), "2"),
+    ((0, 40, 10, 5), "Coffee"),
+    ((20, 40, 10, 5), "1"),
+]
+
+df = extract_table_from_ocr(ocr_results)
+print(df)
 ```
 
-With these two approaches, **TableCV** provides flexibility for table extraction from images, whether you prefer using PaddleOCR or another OCR tool of your choice.
+The OCR result format is:
+
+```python
+((x, y, width, height), text)
+```
+
+Here, `x` and `y` are the top-left position of the text box. `width` and `height` are the size of that box.
+
+## Quick Start With PaddleOCR
+
+Install the optional extra first:
+
+```bash
+pip install "tablecv[paddle]"
+```
+
+Then call `extract_table()` with an image path:
+
+```python
+from tablecv import extract_table
+
+df = extract_table("invoice.png")
+print(df)
+```
+
+`extract_table()` initializes PaddleOCR lazily. Importing `tablecv` does not download OCR models or require PaddleOCR unless you call this function.
+
+## How It Works
+
+TableCV estimates a table in three broad steps:
+
+1. It finds the overall table area from all OCR boxes.
+1. It groups boxes that share similar vertical positions into rows.
+1. It uses the most common row width as the reference for column positions.
+
+This works best for documents where text boxes line up in clear rows and columns.
+
+## Limitations
+
+TableCV is a lightweight table estimator, not a full document understanding system.
+
+- It does not detect table borders or merged cells.
+- It expects OCR boxes to be close to reading order.
+- Skewed, rotated, handwritten, or heavily nested tables may need preprocessing.
+- Real OCR accuracy depends on the OCR engine, image quality, language, and font.
+
+## Troubleshooting
+
+### `libgomp.so.1` Missing
+
+PaddlePaddle depends on an OpenMP runtime on Linux. If `extract_table()` fails while importing Paddle with `libgomp.so.1: cannot open shared object file`, install the system package:
+
+```bash
+sudo apt-get update
+sudo apt-get install libgomp1
+```
+
+You do not need PaddleOCR or `libgomp1` for `extract_table_from_ocr()`.
+
+## Development
+
+This project uses `uv`, Ruff, pytest, Bandit, and PyPI Trusted Publishing.
+
+```bash
+make sync
+make test
+make coverage
+make check-commit
+make build
+```
+
+Default tests use synthetic OCR boxes and do not download OCR models. Tests that require PaddleOCR, image files, model downloads, or external binaries should be marked as `integration`.
+
+## Publishing
+
+Pushes to `main` run the package quality gate and publish to PyPI with Trusted Publishing. Before this works, configure PyPI to trust:
+
+- owner: `inquilabee`
+- repository: `TableCV`
+- workflow: `.github/workflows/python-publish.yml`
+- environment: `pypi`
